@@ -44,4 +44,4 @@ It uses the timer2 input capture direct mode to log the time between two falling
         //reset the counter.
         __HAL_TIM_SET_COUNTER(htim,0);        
     }
-}
+    
