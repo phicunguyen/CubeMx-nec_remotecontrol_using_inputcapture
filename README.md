@@ -5,40 +5,43 @@ It uses the timer2 input capture direct mode to log the time between two falling
 
     void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     {
-       if (htim->Instance == TIM2) {  
-           //capture the time between two falling edges.
-           icVal = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
+        if (htim->Instance == TIM2) {  
+            //capture the time between two falling edges.
+            icVal = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
         
-           //should be 9ms+4.5ms = 13.5ms
-           //The IR_DETTA return true if the start frame is between +/-4% of 13.5ms
-           if (IR_DELTA(icVal, IR_BIT__START_FRAME)) {
-              irBitCnt=2;  //two pulse added 
-              irCode=0;
-           } 
-           else if (irBitCnt >= 0x02) {
+            //should be 9ms+4.5ms = 13.5ms
+            //The IR_DETTA return true if the start frame is between +/-4% of 13.5ms
+            if (IR_DELTA(icVal, IR_BIT__START_FRAME)) {
+                irBitCnt=2;  //two pulse added 
+                irCode=0;
+            }  
+            else if (irBitCnt >= 0x02) {   
                //1.25ms +/-4%
                irLow = IR_DELTA(icVal, IR_BIT__LOW);
                //2.25ms +/-4%
                irHigh = IR_DELTA(icVal, IR_BIT__HIGH);
+               
+               //check if irLow and irHigh in range
                if (irLow || irHigh) {
                    irBitCnt++;
                    irCode <<= 1;
                    if (irHigh) {
                        irCode |= 1;
-                }   
-           } else {
-                //the ir data is not valid
-                //reset the state
-                irBitCnt=0;
-                irCode = 0;
-            }
+                   }   
+                } else {
+                   //the ir data is not valid (in range)
+                   //reset the state
+                   irBitCnt=0;
+                   irCode = 0;
+                }
 
-            //Detect the ir command and data
-            if (irBitCnt >= 32) {
-                irNewCode = irCode;
-                irBitCnt=0;
-                irCode = 0;
-                //should copy the irCode to the user.
+                //Got the ir command and data
+                if (irBitCnt >= 32) {
+                    irNewCode = irCode;
+                    irBitCnt=0;
+                    irCode = 0;
+                    //should copy the irCode to the user.
+                }
             }
         }
         //reset the counter.
