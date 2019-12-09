@@ -36,7 +36,7 @@ It uses the timer2 input capture direct mode to log the time between two falling
                 }
 
                 //Got the ir command and data
-                if (irBitCnt >= 32) {
+                if (irBitCnt >= 34) {
                     irNewCode = irCode;
                     irBitCnt=0;
                     irCode = 0;
